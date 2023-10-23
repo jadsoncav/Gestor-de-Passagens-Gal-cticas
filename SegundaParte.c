@@ -2,111 +2,106 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 #define PrimeiraParte_H
 
-#define MAX_RESOURCES 100
+#define maximoRecursos 100
 
+// Definindo a estrutura Espaconave
 typedef struct {
-    int resources[3];
-    int importancia;
-} Nave;
+    int suprimentos[3]; 
+    int relevancia; 
+} Espaconave;
 
+// Definindo a estrutura FilaEspacial
 typedef struct {
-    Nave** naves;
-    int size;
-    int capacity;
+    Espaconave** espaconaves; 
+    int dimensao; 
+    int habilidade; 
 } FilaEspacial;
 
+// Definindo a estrutura Rearranjos
 typedef struct {
-    int count[MAX_RESOURCES][MAX_RESOURCES][MAX_RESOURCES];
-} Permutations;
+    int count[maximoRecursos][maximoRecursos][maximoRecursos]; 
+} Rearranjos;
 
-// Funções definidas em PrimeiraParte.c
-Nave* lerNaveDoArquivo(FILE* arquivo);
-int verificarDadosNave(Nave* nave);
-Nave* removerNave(FilaEspacial* fila);
-void mostrarFilaEspacial(FilaEspacial* fila);
-void adicionarNaveComNovaImportancia(FilaEspacial* fila);
-void verificarClandestinos(FilaEspacial* fila);
-Nave* encontrarNavePorID(FilaEspacial* fila, int id);
-void aumentarImportanciaEmergencia(FilaEspacial* fila, Nave* nav);
+// Protótipos de função
+Espaconave* lerEspaconaveDoArquivo(FILE* arquivo); 
+int verificarDadosEspaconave(Espaconave* espaconave); 
+Espaconave* removerEspaconave(FilaEspacial* fila); 
+void mostrarFilaEspacial(FilaEspacial* fila); 
+void adicionarEspaconaveComNovaRelevencia(FilaEspacial* fila); 
+void verificarClandestinos(FilaEspacial* fila); 
+Espaconave* encontrarEspaconavePorID(FilaEspacial* fila, int id); 
+void aumentarRelevanciaEmergencia(FilaEspacial* fila, Espaconave* nav); 
 
-FilaEspacial* criarFilaEspacial(int capacity);
-Nave* criarNave(int r1, int r2, int r3);
-void inserirNave(FilaEspacial* fila, Nave* nave);
-void atualizarPermutacoes(Permutations* permutations, Nave* nave);
-int todasPermutacoesOcorreram(Permutations* permutations);
+FilaEspacial* criarFilaEspacial(int habilidade); 
+Espaconave* criarEspaconave(int r1, int r2, int r3);
+void inserirEspaconave(FilaEspacial* fila, Espaconave* espaconave);
+void atualizarRearranjos(Rearranjos* rearranjos, Espaconave* espaconave);
+int todosRearranjosOcorreram(Rearranjos* rearranjos); 
 
-void atualizarPermutacoes(Permutations* permutations, Nave* nave) {
-    // Ordena os recursos da nave em ordem crescente
-    int resources[3];
+// Atualiza o contador de rearranjos após a inserção de uma nova espaçonave na fila espacial
+void atualizarRearranjos(Rearranjos* rearranjos, Espaconave* espaconave) {
+    int suprimentos[3];
     for (int i = 0; i < 3; i++) {
-        resources[i] = nave->resources[i];
+        suprimentos[i] = espaconave->suprimentos[i];
     }
     for (int i = 0; i < 3; i++) {
-        for (int j = i + 1; j < 3; j++) {
-            if (resources[j] < resources[i]) {
-                int temp = resources[i];
-                resources[i] = resources[j];
-                resources[j] = temp;
-            }
-        }
+       for (int j = i + 1; j < 3; j++) {
+    if (suprimentos[j] < suprimentos[i]) {
+        int temp = suprimentos[i];
+        suprimentos[i] = suprimentos[j];
+        suprimentos[j] = temp;
     }
-
-    // Atualiza o contador de permutações
-    permutations->count[resources[0]][resources[1]][resources[2]]++;
 }
 
-int todasPermutacoesOcorreram(Permutations* permutations) {
-    // Verifica se todas as permutações ocorreram
-    for (int i = 0; i < MAX_RESOURCES; i++) {
-        for (int j = 0; j < MAX_RESOURCES; j++) {
-            for (int k = 0; k < MAX_RESOURCES; k++) {
-                if (i != j && i != k && j != k && permutations->count[i][j][k] == 0) {
+        }
+    rearranjos->count[suprimentos[0]][suprimentos[1]][suprimentos[2]]++;
+}
+
+// Verifica se todos os rearranjos ocorreram e zera o contador de rearranjos se todos ocorreram
+int todosRearranjosOcorreram(Rearranjos* rearranjos) {
+    for (int i = 0; i < maximoRecursos; i++) {
+        for (int j = 0; j < maximoRecursos; j++) {
+            for (int k = 0; k < maximoRecursos; k++) {
+                if (i != j && i != k && j != k && rearranjos->count[i][j][k] == 0) {
                     return 0;
                 }
             }
         }
     }
-
-    // Se todas as permutações ocorreram, zera o contador de permutações
-    for (int i = 0; i < MAX_RESOURCES; i++) {
-        for (int j = 0; j < MAX_RESOURCES; j++) {
-            for (int k = 0; k < MAX_RESOURCES; k++) {
-                permutations->count[i][j][k] = 0;
+    for (int i = 0; i < maximoRecursos; i++) {
+        for (int j = 0; j < maximoRecursos; j++) {
+            for (int k = 0; k < maximoRecursos; k++) {
+                rearranjos->count[i][j][k] = 0;
             }
         }
     }
-
     return 1;
 }
-
-
-void MenuSegundaParte(FilaEspacial* fila, Permutations* permutations) {
+void MenuSegundaParte(FilaEspacial* fila, Rearranjos* rearranjos) {
     int opcao;
     do {
         printf("\nOpções:\n");
-        printf("1. Inserir nave\n");
-        printf("2. Inserir nave a partir de arquivo\n");
-        printf("3. Remover nave\n");
-        printf("4. Mostrar fila\n");
-        printf("5. Adicionar nave com nova importância\n");
-        printf("6. Verificar clandestinos\n");
-        printf("7. Aumentar importância de nave em emergência\n");
-        printf("8. Encontrar nave por ID\n");
-        printf("0. Sair\n");
+        printf("1. Inserir espaçonave\n"); 
+        printf("2. Inserir espaçonave a partir de arquivo\n"); 
+        printf("3. Remover espaçonave\n"); 
+        printf("4. Mostrar fila\n"); 
+        printf("5. Adicionar espaçonave com nova relevencia\n"); 
+        printf("6. Verificar clandestinos\n"); 
+        printf("7. Aumentar relevencia de espaçonave em emergência\n");
+        printf("8. Encontrar espaçonave por ID\n"); 
+        printf("0. Sair\n"); 
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
-        getchar(); 
+        getchar();
         switch (opcao) {
             case 1:
-                // Inserir nave
-                if (fila->size < fila->capacity) {
-                    Nave* novaNave = criarNave(rand() % MAX_RESOURCES, rand() % MAX_RESOURCES, rand() % MAX_RESOURCES);
-                    inserirNave(fila, novaNave);
-                    atualizarPermutacoes(permutations, novaNave);
-                    if (todasPermutacoesOcorreram(permutations)) {
+                if (fila->dimensao < fila->habilidade) {
+                    Espaconave* novaEspaconave = criarEspaconave(rand() % maximoRecursos, rand() % maximoRecursos, rand() % maximoRecursos);
+                    inserirEspaconave(fila, novaEspaconave);
+                    atualizarRearranjos(rearranjos, novaEspaconave);
+                    if (todosRearranjosOcorreram(rearranjos)) {
                         printf("A abertura se expandirá.\n");
                     }
                 } else {
@@ -114,21 +109,20 @@ void MenuSegundaParte(FilaEspacial* fila, Permutations* permutations) {
                 }
                 break;
             case 2:
-              if (fila->size < fila->capacity) {
+                if (fila->dimensao < fila->habilidade) {
                     printf("Digite o nome do arquivo: ");
                     char nomeArquivo[100];
                     scanf("%s", nomeArquivo);
                     FILE* arquivo = fopen(nomeArquivo, "r");
                     if (arquivo != NULL) {
-                        Nave* novaNave = lerNaveDoArquivo(arquivo);
+                        Espaconave* novaEspaconave = lerEspaconaveDoArquivo(arquivo);
                         fclose(arquivo);
-                        
-                        if (verificarDadosNave(novaNave)) {
-                            inserirNave(fila, novaNave);
-                            printf("Nave do arquivo inserida na fila com importância %d.\n", novaNave->importancia);
+                        if (verificarDadosEspaconave(novaEspaconave)) {
+                            inserirEspaconave(fila, novaEspaconave);
+                            printf("Espaconave do arquivo inserida na fila com relevencia %d.\n", novaEspaconave->relevancia);
                         } else {
-                            printf("Dados da nave do arquivo são inválidos. A nave não foi inserida na fila.\n");
-                            free(novaNave); 
+                            printf("Dados da espaçonave do arquivo são inválidos. A espaconave não foi inserida na fila.\n");
+                            free(novaEspaconave);
                         }
                     } else {
                         printf("Não foi possível abrir o arquivo.\n");
@@ -138,76 +132,71 @@ void MenuSegundaParte(FilaEspacial* fila, Permutations* permutations) {
                 }
                 break;
             case 3:
-            Nave* navRemovida;
-             navRemovida = removerNave(fila);
+                Espaconave* navRemovida;
+                navRemovida = removerEspaconave(fila);
                 if (navRemovida != NULL) {
-                    printf("Nave removida com importância %d.\n", navRemovida->importancia);
+                    printf("Espaconave removida com relevencia %d.\n", navRemovida->relevancia);
                     free(navRemovida);
                 } else {
                     printf("A fila espacial está vazia.\n");
                 }
                 break;
-                
             case 4:
-                 mostrarFilaEspacial(fila);
-                break;
+                mostrarFilaEspacial(fila); 
                 break;
             case 5:
-                adicionarNaveComNovaImportancia(fila);
-                break;
+                adicionarEspaconaveComNovaRelevencia(fila); 
                 break;
             case 6:
-                            verificarClandestinos(fila);
+                verificarClandestinos(fila); 
                 break;
             case 7:
-                // Aumentar importância de nave em emergência
-                printf("Digite o ID da nave em emergência: ");
+                printf("Digite o ID da espaçonave em emergência: ");
                 int idNaveEmergencia;
                 scanf("%d", &idNaveEmergencia);
-                Nave* naveEmergencia = encontrarNavePorID(fila, idNaveEmergencia);
+                Espaconave* naveEmergencia = encontrarEspaconavePorID(fila, idNaveEmergencia);
                 if (naveEmergencia != NULL) {
-                    aumentarImportanciaEmergencia(fila, naveEmergencia);
-                    printf("Importância da nave em emergência aumentada para %d.\n", naveEmergencia->importancia);
+                    aumentarRelevanciaEmergencia(fila, naveEmergencia); 
+                    printf("Relevencia da espaçonave em emergência aumentada para %d.\n", naveEmergencia->relevancia);
                 } else {
-                    printf("Não foi encontrada nenhuma nave com o ID fornecido.\n");
+                    printf("Não foi encontrada nenhuma espaçonave com o ID fornecido.\n");
+                }
+                break;case 8:
+               
+                printf("Digite o ID da espaçonave que deseja encontrar: ");
+                int idEspaconaveProcurada;
+                scanf("%d", &idEspaconaveProcurada);
+                Espaconave* espaconaveEncontrada = encontrarEspaconavePorID(fila, idEspaconaveProcurada);
+                if (espaconaveEncontrada != NULL) {
+                    printf("A espaçonave com ID %d foi encontrada.\n", idEspaconaveProcurada);
+                } else {
+                    printf("Não foi encontrada nenhuma espaçonave com o ID fornecido.\n");
                 }
                 break;
-            case 8:
-                // Encontrar nave por ID
-                printf("Digite o ID da nave que deseja encontrar: ");
-                int idNaveProcurada;
-                scanf("%d", &idNaveProcurada);
-                Nave* naveEncontrada = encontrarNavePorID(fila, idNaveProcurada);
-                if (naveEncontrada != NULL) {
-                    printf("A nave com ID %d foi encontrada.\n", idNaveProcurada);
-                } else {
-                    printf("Não foi encontrada nenhuma nave com o ID fornecido.\n");
-                }
-            break;
-
             case 0:
-              printf("\nSaindo do programa.\n");
-              break;
-
+               
+                printf("\nSaindo do programa.\n");
+                break;
             default:
-              printf("\nOpção inválida. Tente novamente.\n");
+              
+                printf("\nOpção inválida. Tente novamente.\n");
         }
     } while (opcao != 0);
 }
 
 void SegundaParte() {
-    // Inicialize a fila e as permutações
+
     FilaEspacial* fila = criarFilaEspacial(10);
-    Permutations permutations = {0};
+    Rearranjos rearranjos = {0};
 
-    // Chame o menu da segunda parte
-    MenuSegundaParte(fila, &permutations);
 
-    // Libere a memória alocada para a fila e as naves
-    for (int i = 0; i < fila->size; i++) {
-        free(fila->naves[i]);
+    MenuSegundaParte(fila, &rearranjos);
+
+ 
+    for (int i = 0; i < fila->dimensao; i++) {
+        free(fila->espaconaves[i]);
     }
-    free(fila->naves);
+    free(fila->espaconaves);
     free(fila);
 }
 
